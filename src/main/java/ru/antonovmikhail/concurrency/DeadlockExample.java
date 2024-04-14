@@ -32,30 +32,32 @@ public class DeadlockExample {
     }
 
     private void acquireResourcesAndWork(Lock firstLock, Lock secondLock, Resource firstResource, Resource secondResource, String threadName) {
-        firstLock.lock();
-        System.out.println(threadName + " locked " + firstResource);
-
-        try {
-            // Имитация работы с ресурсом
-            Thread.sleep(100);
-
-            secondLock.lock();
-            System.out.println(threadName + " locked " + secondResource);
+        if (firstLock.tryLock()) {
+            System.out.println(threadName + " locked " + firstResource);
 
             try {
                 // Имитация работы с ресурсом
                 Thread.sleep(100);
+
+                if (secondLock.tryLock()) {
+                    System.out.println(threadName + " locked " + secondResource);
+
+                    try {
+                        // Имитация работы с ресурсом
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    } finally {
+                        secondLock.unlock();
+                        System.out.println(threadName + " unlocked " + secondResource);
+                    }
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } finally {
-                secondLock.unlock();
-                System.out.println(threadName + " unlocked " + secondResource);
+                firstLock.unlock();
+                System.out.println(threadName + " unlocked " + firstResource);
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } finally {
-            firstLock.unlock();
-            System.out.println(threadName + " unlocked " + firstResource);
         }
     }
 
