@@ -12,7 +12,7 @@ public class ConcurrentBank {
         UUID newId = UUID.randomUUID();
         BankAccount newAccount = new BankAccount(newId, balance);
         accounts.putIfAbsent(newId, newAccount);
-        return newAccount;
+        return accounts.get(newId);
     }
 
     public synchronized void transfer(BankAccount account1, BankAccount account2, int amount) {
